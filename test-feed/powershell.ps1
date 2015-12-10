@@ -17,9 +17,9 @@ Function propagate([int] $sn)
         {
             $text | Out-File $filename -Append
         }
-		Write-output "write_eicar '$($template)'" | Out-File $filename -Append
+        Write-output "write_eicar '$($template)'" | Out-File $filename -Append
     }
-	Write-host 'Done'
+    Write-host 'Done'
 }
 
 Function write_eicar([string] $output_file)
@@ -28,9 +28,20 @@ Function write_eicar([string] $output_file)
                'EICAR-STANDARD-ANTIVIRUS-TEST-FILE',
                '!$H+H*')
     $filename = $output_file
-    foreach ($text in $target)
+    #  -NoNewline only support v5 and later
+    if ([string]::Compare($host.version.Major, '5') -ge 0)
     {
-        $text | Out-File -NoNewline $filename -Append
+        foreach ($text in $target)
+        {
+            $text | Out-File -NoNewline $filename -Append
+        }
+    }
+    else
+    {
+        foreach ($text in $target)
+        {
+            [System.IO.File]::AppendAllText($filename, $text)
+        }
     }
 }
 
@@ -53,7 +64,8 @@ Function trigger_web_browsing()
 If ($howmany -ge 1)
 {
     propagate $howmany
-	Exit
+    Exit
 }
 
 trigger_web_browsing
+#write_eicar $file2write
